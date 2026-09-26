@@ -5,7 +5,7 @@ A high-converting, modern, responsive fintech landing page built with **React**,
 --- 
 
 ## 🚀 Overview & Features
-
+ 
 - **Section 01: Hero & Sticky Navigation**
   - Transparent blur glassmorphic navbar with active nav items, Login, and Get Started triggers.
   - Value proposition headline with brand purple-to-magenta gradient.
