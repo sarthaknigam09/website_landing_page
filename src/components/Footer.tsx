@@ -43,7 +43,22 @@ export const Footer: React.FC = () => {
 
   const productLinks = ['Features', 'Insights', 'AI Assistant', 'Pricing'];
   const companyLinks = ['About Us', 'Careers', 'Blog', 'Contact Us'];
-  const supportLinks = ['Help Center', 'FAQs', 'Privacy Policy', 'Terms of Service'];
+  const supportLinks = [
+    'Help Center',
+    'FAQs',
+    'Privacy Policy',
+    'Terms of Service',
+    'Cookie Policy',
+    'Grievance Redressal Policy',
+  ];
+
+  const linkHrefs: Record<string, string> = {
+    'Pricing': '/moneymapper-pricing.html',
+    'Privacy Policy': '/privacy-policy.html',
+    'Terms of Service': '/terms-and-conditions.html',
+    'Cookie Policy': '/cookie-policy.html',
+    'Grievance Redressal Policy': '/grievance-redressal-policy.html',
+  };
 
   return (
     <footer className="relative bg-[#06040f] border-t border-white/[0.08] text-white">
@@ -92,16 +107,28 @@ export const Footer: React.FC = () => {
             <div>
               <h3 className="text-sm font-semibold text-white mb-3 tracking-wide">Product</h3>
               <ul className="space-y-2">
-                {productLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      onClick={() => openComingSoon(link)}
-                      className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
+                {productLinks.map((link) => {
+                  const href = linkHrefs[link];
+                  return (
+                    <li key={link}>
+                      {href ? (
+                        <a
+                          href={href}
+                          className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
+                        >
+                          {link}
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => openComingSoon(link)}
+                          className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
+                        >
+                          {link}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
@@ -126,16 +153,28 @@ export const Footer: React.FC = () => {
             <div className="col-span-2 sm:col-span-1">
               <h3 className="text-sm font-semibold text-white mb-3 tracking-wide">Support</h3>
               <ul className="space-y-2">
-                {supportLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      onClick={() => openComingSoon(link)}
-                      className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
+                {supportLinks.map((link) => {
+                  const href = linkHrefs[link];
+                  return (
+                    <li key={link}>
+                      {href ? (
+                        <a
+                          href={href}
+                          className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
+                        >
+                          {link}
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => openComingSoon(link)}
+                          className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
+                        >
+                          {link}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
