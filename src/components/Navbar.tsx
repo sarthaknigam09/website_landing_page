@@ -13,7 +13,7 @@ export const Navbar: React.FC = () => {
     { label: 'Features', name: 'Features' },
     { label: 'Insights', name: 'Insights' },
     { label: 'Pricing', name: 'Pricing' },
-    { label: 'About Us', name: 'About Us' },
+    { label: 'About Us', name: 'About Us', href: '/moneymapper-about.html' },
   ];
 
   const handleLinkClick = (name: string) => {
@@ -51,15 +51,25 @@ export const Navbar: React.FC = () => {
 
         {/* Center: Desktop Nav Links */}
         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
-          {navLinks.map((link) => (
-            <button
-              key={link.name}
-              onClick={() => handleLinkClick(link.name)}
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-150 cursor-pointer focus:outline-none"
-            >
-              {link.label}
-            </button>
-          ))}
+          {navLinks.map((link) =>
+            link.href ? (
+              <a
+                key={link.name}
+                href={link.href}
+                className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-150 cursor-pointer focus:outline-none"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <button
+                key={link.name}
+                onClick={() => handleLinkClick(link.name)}
+                className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-150 cursor-pointer focus:outline-none"
+              >
+                {link.label}
+              </button>
+            )
+          )}
         </nav>
 
         {/* Right: Auth Action Buttons */}
@@ -95,15 +105,26 @@ export const Navbar: React.FC = () => {
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#0e0c1a] border-b border-white/10 px-6 py-4 space-y-3 animate-fade-in">
-          {navLinks.map((link) => (
-            <button
-              key={link.name}
-              onClick={() => handleLinkClick(link.name)}
-              className="block w-full text-left py-2 text-base font-medium text-white/80 hover:text-white"
-            >
-              {link.label}
-            </button>
-          ))}
+          {navLinks.map((link) =>
+            link.href ? (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full text-left py-2 text-base font-medium text-white/80 hover:text-white"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <button
+                key={link.name}
+                onClick={() => handleLinkClick(link.name)}
+                className="block w-full text-left py-2 text-base font-medium text-white/80 hover:text-white"
+              >
+                {link.label}
+              </button>
+            )
+          )}
           <div className="pt-4 border-t border-white/10 flex flex-col gap-2.5">
             <button
               onClick={handleLoginClick}

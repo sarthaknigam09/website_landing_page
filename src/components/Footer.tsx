@@ -54,6 +54,7 @@ export const Footer: React.FC = () => {
 
   const linkHrefs: Record<string, string> = {
     'Pricing': '/moneymapper-pricing.html',
+    'About Us': '/moneymapper-about.html',
     'Privacy Policy': '/privacy-policy.html',
     'Terms of Service': '/terms-and-conditions.html',
     'Cookie Policy': '/cookie-policy.html',
@@ -136,16 +137,28 @@ export const Footer: React.FC = () => {
             <div>
               <h3 className="text-sm font-semibold text-white mb-3 tracking-wide">Company</h3>
               <ul className="space-y-2">
-                {companyLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      onClick={() => openComingSoon(link)}
-                      className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
+                {companyLinks.map((link) => {
+                  const href = linkHrefs[link];
+                  return (
+                    <li key={link}>
+                      {href ? (
+                        <a
+                          href={href}
+                          className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
+                        >
+                          {link}
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => openComingSoon(link)}
+                          className="text-xs text-white/50 hover:text-white transition-colors text-left py-0.5 w-full cursor-pointer"
+                        >
+                          {link}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
