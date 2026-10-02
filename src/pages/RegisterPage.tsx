@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, User, Phone, CheckCircle2 } from 'lucide-react';
 import { AuthPageLayout } from '../components/AuthPageLayout';
 import { authService } from '../services/authService';
+
+const SIGNUP_COOLDOWN_SECONDS = 30;
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,11 +18,23 @@ export const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const intervalId = setInterval(() => {
+      setCooldown((remaining) => remaining - 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [cooldown]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cooldown > 0) return;
     setErrorMessage(null);
 
     const trimmedName = fullName.trim();
@@ -29,6 +43,22 @@ export const RegisterPage: React.FC = () => {
 
     if (!trimmedName || !trimmedEmail || !trimmedMobile || !password || !confirmPassword) {
       setErrorMessage('Please fill in all fields');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setErrorMessage('Please enter a valid email address');
+      return;
+    }
+
+    const mobileDigits = trimmedMobile.replace(/\D/g, '');
+    if (mobileDigits.length < 10) {
+      setErrorMessage('Please enter a valid mobile number');
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters');
       return;
     }
 
@@ -46,7 +76,11 @@ export const RegisterPage: React.FC = () => {
       });
       setShowSuccessDialog(true);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Registration failed. Please try again.');
+      const message = err.message || 'Registration failed. Please try again.';
+      setErrorMessage(message);
+      if (message.startsWith('Too many sign-up attempts')) {
+        setCooldown(SIGNUP_COOLDOWN_SECONDS);
+      }
     } finally {
       setLoading(false);
     }
@@ -214,11 +248,13 @@ export const RegisterPage: React.FC = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || cooldown > 0}
             className="w-full mt-4 py-3.5 px-4 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold rounded-[16px] transition-all duration-200 shadow-lg shadow-[#4F46E5]/25 disabled:opacity-60 flex items-center justify-center text-sm"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : cooldown > 0 ? (
+              `Try again in ${cooldown}s`
             ) : (
               'Register'
             )}

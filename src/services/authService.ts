@@ -204,12 +204,42 @@ export class AuthService {
   }
 
   async signUp(email: string, password: string, metadata: SignUpMetadata): Promise<AuthResponse['data']> {
+    const mapSignUpError = (message: string, status?: number): string => {
+      const normalizedMessage = message.toLowerCase();
+      if (normalizedMessage.includes('already registered')) {
+        return 'An account already exists with this email.';
+      }
+      if (normalizedMessage.includes('password')) {
+        return message;
+      }
+      if (normalizedMessage.includes('rate limit') || status === 429) {
+        return 'Too many sign-up attempts. Please wait a few minutes and try again.';
+      }
+      if (normalizedMessage.includes('signups not allowed') || normalizedMessage.includes('signup is disabled')) {
+        return 'New registrations are currently disabled.';
+      }
+      if (normalizedMessage.includes('sending confirmation email') || normalizedMessage.includes('not authorized')) {
+        return "We couldn't send the verification email. Please try again later.";
+      }
+      if (normalizedMessage.includes('database error')) {
+        return "We couldn't create your account right now. Please try again later.";
+      }
+      if (normalizedMessage.includes('network') || normalizedMessage.includes('fetch')) {
+        return 'Connection issue detected. Please check your internet and try again.';
+      }
+      if (import.meta.env.DEV) {
+        return `${message} (status ${status})`;
+      }
+      return sanitizeErrorMessage(message);
+    };
+
     let res: AuthResponse;
     try {
       res = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined,
           data: {
             plan: 'b2c',
             ...metadata,
@@ -217,23 +247,29 @@ export class AuthService {
         },
       });
     } catch (err: any) {
+      console.error('[signUp] raw error:', {
+        message: err?.message ?? String(err),
+        status: err?.status,
+        code: err?.code,
+      });
       const msg = String(err?.message || err);
-      if (msg.toLowerCase().includes('already registered')) {
-        throw new Error('An account already exists with this email.');
-      }
-      throw new Error(sanitizeErrorMessage(err));
+      throw new Error(mapSignUpError(msg, err?.status));
     }
 
     const { data, error } = res;
     if (error) {
-      const errorMsg = error.message || '';
-      if (errorMsg.toLowerCase().includes('already registered')) {
-        throw new Error('An account already exists with this email.');
-      }
-      throw new Error(sanitizeErrorMessage(error));
+      console.error('[signUp] raw error:', {
+        message: error.message,
+        status: error.status,
+        code: (error as any).code,
+      });
+      throw new Error(mapSignUpError(error.message, error.status));
     }
 
     if (data.user) {
+      if (data.user.identities?.length === 0) {
+        throw new Error('An account already exists with this email.');
+      }
       this._currentUser = data.user;
     }
 
@@ -241,6 +277,26 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string): Promise<AuthResponse['data']> {
+    const mapSignInError = (message: string, status?: number, code?: string): string => {
+      const normalizedMessage = message.toLowerCase();
+      if (normalizedMessage.includes('invalid login credentials')) {
+        return 'Incorrect email or password. Please try again.';
+      }
+      if (normalizedMessage.includes('email not confirmed') || code?.toLowerCase() === 'email_not_confirmed') {
+        return 'Please verify your email first. Check your inbox (and spam folder) for the confirmation link.';
+      }
+      if (normalizedMessage.includes('rate limit') || status === 429) {
+        return 'Too many attempts. Please wait a few minutes and try again.';
+      }
+      if (normalizedMessage.includes('network') || normalizedMessage.includes('fetch')) {
+        return 'Connection issue detected. Please check your internet and try again.';
+      }
+      if (import.meta.env.DEV) {
+        return `${message} (status ${status})`;
+      }
+      return sanitizeErrorMessage(message);
+    };
+
     let res: AuthResponse;
     try {
       res = await supabase.auth.signInWithPassword({
@@ -248,20 +304,23 @@ export class AuthService {
         password,
       });
     } catch (err: any) {
+      console.error('[signIn] raw error:', {
+        message: err?.message ?? String(err),
+        status: err?.status,
+        code: err?.code,
+      });
       const msg = String(err?.message || err);
-      if (msg.toLowerCase().includes('invalid login credentials')) {
-        throw new Error('Incorrect email or password. Please try again.');
-      }
-      throw new Error(sanitizeErrorMessage(err));
+      throw new Error(mapSignInError(msg, err?.status, err?.code));
     }
 
     const { data, error } = res;
     if (error) {
-      const errorMsg = error.message || '';
-      if (errorMsg.toLowerCase().includes('invalid login credentials')) {
-        throw new Error('Incorrect email or password. Please try again.');
-      }
-      throw new Error(sanitizeErrorMessage(error));
+      console.error('[signIn] raw error:', {
+        message: error.message,
+        status: error.status,
+        code: (error as any).code,
+      });
+      throw new Error(mapSignInError(error.message, error.status, (error as any).code));
     }
 
     if (data.user) {
