@@ -1196,7 +1196,7 @@ export class ChatIntentService {
             ],
             timestamp,
           };
-        } else if (!this._matchesAnyIntent(norm) && !norm.includes('screener')) {
+        } else if (!norm.includes('screener')) {
           return {
             id: Date.now().toString(),
             sender: 'bot',
